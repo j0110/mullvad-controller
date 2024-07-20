@@ -148,7 +148,7 @@ def unload_tunnel(tunnel):
     if platform.system() == "Windows":
         subprocess.run(["wireguard", "/uninstalltunnelservice", tunnel])
     if platform.system() == "Linux":
-        subprocess.run(["wg-quick", "down", tunnel])
+        subprocess.run(["systemctl", "stop", f"wg-quick@{tunnel}"])
 
 def delete_extra_tunnels():
     print("Deleting older tunnels.")
@@ -157,6 +157,7 @@ def delete_extra_tunnels():
         [subprocess.run(["wireguard", "/uninstalltunnelservice", file]) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
     if platform.system() == "Linux":
         path = "/etc/wireguard/"
+        [subprocess.run(["systemctl", "disable", f"wg-quick@{file.split(os.sep)[-1]}"]) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
     [os.remove(file) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
 
 def load_tunnel(conf_name):
@@ -166,8 +167,9 @@ def load_tunnel(conf_name):
         shutil.move(conf_name, "C:\\Program Files\\WireGuard\\Data\\mullvad\\" + conf_name)
         subprocess.run(["wireguard", "/installtunnelservice", "C:\\Program Files\\WireGuard\\Data\\mullvad\\" + conf_name])
     if platform.system() == "Linux":
+        os.makedirs("/etc/wireguard", exist_ok=True)
         shutil.move(conf_name, "/etc/wireguard/" + conf_name)
-        subprocess.run(["wg-quick", "up", "/etc/wireguard/" + conf_name])
+        subprocess.run(["systemctl", "start", f"wg-quick@{conf_name}"])
 
 def detect_active_connection():
     active_tunnel = get_active_tunnel()
