@@ -9,8 +9,6 @@ import os
 import glob
 import shutil
 
-dns = "10.64.0.1"
-
 def get_servers():
     print("Contacting Mullvad API for server list.")
     response = requests.get("https://api.mullvad.net/public/relays/wireguard/v1/")
@@ -84,7 +82,7 @@ def write_conf(entry_server, exit_server, privkey, address):
         f.write(f"[Interface]\n")
         f.write(f"PrivateKey = {privkey}\n")
         f.write(f"Address = {address}\n")
-        f.write(f"DNS = {dns}\n")
+        f.write(f"DNS = 10.64.0.1\n")
         if platform.system() == "Linux":
             f.write(f"PostUp = iptables -I OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT && ip6tables -I OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT\n")
             f.write(f"PostUp = mullvad-upgrade-tunnel -wg-interface %i\n")
