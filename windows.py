@@ -4,16 +4,22 @@ import subprocess
 import shutil
 import glob
 import sys
+import winreg
 
 def is_admin():
     return(ctypes.windll.shell32.IsUserAnAdmin() == 1)
 
 def write_registry_key():
     print("Writing key in the registry.")
-    cmd = subprocess.run(["reg", "add", "HKLM\\Software\\WireGuard", "/v", "DangerousScriptExecution", "/t", "REG_DWORD", "/d", "1", "/f"])
-    print(cmd.returncode)
-    if cmd.returncode == "0":
-        print("Error: Unable to write key in the registry.", file=sys.stderr)
+    try:
+        registry_path = r"Software\WireGuard"
+        key_name = "DangerousScriptExecution"
+        key_value = 1
+        
+        with winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, registry_path) as key:
+            winreg.SetValueEx(key, key_name, 0, winreg.REG_DWORD, key_value)
+    except Exception as e:
+        print(f"An error occurred: {e}")
         sys.exit(1)
 
 def unload_tunnel(tunnel):
