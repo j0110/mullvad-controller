@@ -164,10 +164,12 @@ def load_tunnel(conf_name):
         os.makedirs("C:\\Program Files\\WireGuard\\Data\\mullvad", exist_ok=True)
         shutil.move(conf_name, "C:\\Program Files\\WireGuard\\Data\\mullvad\\" + conf_name)
         subprocess.run(["wireguard", "/installtunnelservice", "C:\\Program Files\\WireGuard\\Data\\mullvad\\" + conf_name])
+        subprocess.run(["sc", "config", "WireguardTunnel$" + conf_name, "start=auto"])
+        subprocess.run(["sc", "failure", "WireguardTunnel$" + conf_name, "reset=0", "actions=restart/0/restart/0/restart/0"])
     if platform.system() == "Linux":
         os.makedirs("/etc/wireguard", exist_ok=True)
         shutil.move(conf_name, "/etc/wireguard/" + conf_name)
-        subprocess.run(["systemctl", "start", f"wg-quick@{conf_name}"])
+        subprocess.run(["systemctl", "start", "wg-quick@" + conf_name])
 
 def detect_active_connection():
     active_tunnel = get_active_tunnel()
