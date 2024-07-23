@@ -9,7 +9,7 @@ import os.path
 
 if platform.system() == "Windows":
     from windows import *
-elif platform.system() == "linux":
+elif platform.system() == "Linux":
     from linux import *
 else:
     print("Error : You are not on a supported platform, exiting.")
