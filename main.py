@@ -5,9 +5,15 @@ import sys
 import requests
 import subprocess
 import platform
-import os
-import glob
-import shutil
+import os.path
+
+if platform.system() == "Windows":
+    from windows import *
+elif platform.system() == "linux":
+    from linux import *
+else:
+    print("Error : You are not on a supported platform, exiting.")
+    sys.exit(1)
 
 def get_servers():
     print("Contacting Mullvad API for server list.")
@@ -72,31 +78,6 @@ def get_address(account, pubkey):
         sys.exit(1)
     return(address)
 
-def write_conf(entry_server, exit_server, privkey, address):
-    if not exit_server:
-        exit_server = {"port" : "51820"}
-        config_file = f"m_{entry_server['country.code'].upper()}.{entry_server['city.code']}.conf"
-    else:
-        config_file = f"m_{entry_server['country.code'].upper()}.{entry_server['city.code']}-{exit_server['country.code'].upper()}.{exit_server['city.code']}.conf"
-    with open(config_file, "w") as f:
-        f.write(f"[Interface]\n")
-        f.write(f"PrivateKey = {privkey}\n")
-        f.write(f"Address = {address}\n")
-        f.write(f"DNS = 10.64.0.1\n")
-        if platform.system() == "Linux":
-            f.write(f"PostUp = iptables -I OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT && ip6tables -I OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT\n")
-            f.write(f"PostUp = mullvad-upgrade-tunnel -wg-interface %i\n")
-            f.write(f"PreDown = iptables -D OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT && ip6tables -D OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT\n")
-        if platform.system() == "Windows":
-            f.write(f"PostUp = mullvad-upgrade-tunnel -wg-interface %WIREGUARD_TUNNEL_NAME%\n")
-        f.write(f"\n")
-        f.write(f"[Peer]\n")
-        f.write(f"PublicKey = {entry_server['pubkey']}\n")
-        f.write(f"Endpoint = {entry_server['ip4']}:{exit_server['port']}\n")
-        f.write(f"AllowedIPs = 0.0.0.0/0, ::/0\n")
-        f.write(f"PersistentKeepalive = 25")
-    return(config_file)
-
 def ask_multihop():
     while True:
         answer = input("Would you like to use a different exit server than the entry server ? [y/n] > ").strip().lower()
@@ -104,13 +85,6 @@ def ask_multihop():
             return(True)
         if answer == "n":
             return(False)
-
-def is_admin():
-    if platform.system() == "Windows":
-        import ctypes
-        return(ctypes.windll.shell32.IsUserAnAdmin() == 1)
-    if platform.system() == "Linux":
-        return(os.getuid() == 0)
 
 def exists_key():
     return(os.path.isfile("key"))
@@ -125,51 +99,11 @@ def load_key():
 
 def reload_tunnel(conf_name):
     print("Preparing to load the newly created tunnel.")
-    if platform.system() == "Windows":
-        write_registry_key()
     disconnect()
     load_tunnel(conf_name)
 
-def write_registry_key():
-    print("Writing key in the registry.")
-    cmd = subprocess.run(["reg", "add", "HKLM\\Software\\WireGuard", "/v", "DangerousScriptExecution", "/t", "REG_DWORD", "/d", "1", "/f"])
-    print(cmd.returncode)
-    if cmd.returncode == "0":
-        print("Error: Unable to write key in the registry.", file=sys.stderr)
-        sys.exit(1)
-
 def get_active_tunnel():
     return(subprocess.run(['wg', 'show', 'all', 'dump'], capture_output=True, text=True).stdout.split("\t")[0])
-
-def unload_tunnel(tunnel):
-    print("Unloading active tunnel : " + tunnel + ".")
-    if platform.system() == "Windows":
-        subprocess.run(["wireguard", "/uninstalltunnelservice", tunnel])
-    if platform.system() == "Linux":
-        subprocess.run(["systemctl", "stop", f"wg-quick@{tunnel}"])
-
-def delete_extra_tunnels():
-    print("Deleting older tunnels.")
-    if platform.system() == "Windows":
-        path = "C:\\Program Files\\WireGuard\\Data\\mullvad\\"
-        [subprocess.run(["wireguard", "/uninstalltunnelservice", file]) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
-    if platform.system() == "Linux":
-        path = "/etc/wireguard/"
-        [subprocess.run(["systemctl", "disable", f"wg-quick@{file.split(os.sep)[-1]}"]) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
-    [os.remove(file) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
-
-def load_tunnel(conf_name):
-    print("Loading the new tunnel.")
-    if platform.system() == "Windows":
-        os.makedirs("C:\\Program Files\\WireGuard\\Data\\mullvad", exist_ok=True)
-        shutil.move(conf_name, "C:\\Program Files\\WireGuard\\Data\\mullvad\\" + conf_name)
-        subprocess.run(["wireguard", "/installtunnelservice", "C:\\Program Files\\WireGuard\\Data\\mullvad\\" + conf_name])
-        subprocess.run(["sc", "config", "WireguardTunnel$" + conf_name, "start=auto"])
-        subprocess.run(["sc", "failure", "WireguardTunnel$" + conf_name, "reset=0", "actions=restart/0/restart/0/restart/0"])
-    if platform.system() == "Linux":
-        os.makedirs("/etc/wireguard", exist_ok=True)
-        shutil.move(conf_name, "/etc/wireguard/" + conf_name)
-        subprocess.run(["systemctl", "start", "wg-quick@" + conf_name])
 
 def detect_active_connection():
     active_tunnel = get_active_tunnel()
@@ -177,25 +111,6 @@ def detect_active_connection():
         print("You are actually connected to " + active_tunnel + ".")
     else:
         print("You are not actually connected to a Wireguard server.")
-
-def main():
-    detect_active_connection()
-    if not is_admin():
-        print("You are not running this script with admin/su rights.")
-        print("Please restart with admin/su rights.")
-        print("Bye !")
-        sys.exit(0)
-    while True:
-        print("Which action would you like to perform :")
-        print("[0] Connect to a new tunnel")
-        print("[1] Disconnect the existing tunnel")
-        answer = input("Which action would you like to perform > ").strip()
-        if answer == "0":
-            connect()
-            return()
-        if answer == "1":
-            disconnect()
-            return()
 
 def disconnect():
     active_tunnel = get_active_tunnel()
@@ -229,6 +144,25 @@ def connect():
     print("Writing configuration file.")
     conf_name = write_conf(entry_server, exit_server, privkey, address)
     reload_tunnel(conf_name)
+
+def main():
+    detect_active_connection()
+    if not is_admin():
+        print("You are not running this script with admin/su rights.")
+        print("Please restart with admin/su rights.")
+        print("Bye !")
+        sys.exit(0)
+    while True:
+        print("Which action would you like to perform :")
+        print("[0] Connect to a new tunnel")
+        print("[1] Disconnect the existing tunnel")
+        answer = input("Which action would you like to perform > ").strip()
+        if answer == "0":
+            connect()
+            return()
+        if answer == "1":
+            disconnect()
+            return()
 
 if __name__ == '__main__':
     main()
