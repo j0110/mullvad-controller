@@ -7,19 +7,20 @@ def is_admin():
     return(os.getuid() == 0)
 
 def unload_tunnel(tunnel):
-    subprocess.run(["systemctl", "stop", "wg-quick@" + tunnel])
+    # does it work ?
+    subprocess.run(["systemctl", "stop", "wg-quick@" + tunnel[:-5]])
 
 def delete_extra_tunnels():
     print("Deleting older tunnels.")
     path = "/etc/wireguard/"
-    [subprocess.run(["systemctl", "disable", f"wg-quick@{file.split(os.sep)[-1]}"]) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
+    [subprocess.run(["systemctl", "disable", f"wg-quick@{file.split(os.sep)[-1][:-5]}"]) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
     [os.remove(file) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
 
 def load_tunnel(conf_name):
     print("Loading the new tunnel.")
     os.makedirs("/etc/wireguard", exist_ok=True)
     shutil.move(conf_name, "/etc/wireguard/" + conf_name)
-    subprocess.run(["systemctl", "start", "wg-quick@" + conf_name])
+    subprocess.run(["systemctl", "start", "wg-quick@" + conf_name[:-5]])
 
 def write_conf(entry_server, exit_server, privkey, address):
     if not exit_server:
