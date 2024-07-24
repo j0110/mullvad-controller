@@ -115,7 +115,6 @@ def detect_active_connection():
 def disconnect():
     active_tunnel = get_active_tunnel()
     if active_tunnel:
-        print(active_tunnel)
         unload_tunnel(active_tunnel)
     delete_extra_tunnels()
 

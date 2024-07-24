@@ -7,8 +7,7 @@ def is_admin():
     return(os.getuid() == 0)
 
 def unload_tunnel(tunnel):
-    # does it work ?
-    subprocess.run(["systemctl", "stop", "wg-quick@" + tunnel[:-5]])
+    subprocess.run(["systemctl", "stop", "wg-quick@" + tunnel])
 
 def delete_extra_tunnels():
     print("Deleting older tunnels.")
@@ -22,7 +21,7 @@ def load_tunnel(conf_name):
     shutil.move(conf_name, "/etc/wireguard/" + conf_name)
     subprocess.run(["systemctl", "start", "wg-quick@" + conf_name[:-5]])
 
-def write_conf(entry_server, exit_server, privkey, address):
+def write_conf(entry_server, exit_server, privkey, address):    
     if not exit_server:
         exit_server = {"port" : "51820"}
         config_file = f"m_{entry_server['country.code'].upper()}.{entry_server['city.code']}.conf"
