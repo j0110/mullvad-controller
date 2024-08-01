@@ -30,18 +30,23 @@ def unload_tunnel(tunnel):
 
 def delete_extra_tunnels():
     print("Deleting older tunnels.")
-    path = "C:\\Program Files\\WireGuard\\Data\\mullvad\\"
+    path = "C:\\Program Files\\WireGuard\\Data\\Configurations\\"
     [subprocess.run(["wireguard", "/uninstalltunnelservice", file]) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
     [os.remove(file) for file in glob.glob(path + "*") if file.split(os.sep)[-1].startswith("m_")]
 
 def load_tunnel(conf_name):
     write_registry_key()
     print("Loading the new tunnel.")
-    os.makedirs("C:\\Program Files\\WireGuard\\Data\\mullvad", exist_ok=True)
-    shutil.move(conf_name, "C:\\Program Files\\WireGuard\\Data\\mullvad\\" + conf_name)
-    subprocess.run(["wireguard", "/installtunnelservice", "C:\\Program Files\\WireGuard\\Data\\mullvad\\" + conf_name])
-    subprocess.run(["sc", "config", "WireguardTunnel$" + conf_name, "start=auto"])
-    subprocess.run(["sc", "failure", "WireguardTunnel$" + conf_name, "reset=0", "actions=restart/0/restart/0/restart/0"])
+    shutil.move(conf_name, "C:\\Program Files\\WireGuard\\Data\\Configurations\\" + conf_name)
+    print(["wireguard", "/installtunnelservice", "C:\\Program Files\\WireGuard\\Data\\Configurations\\" + conf_name + ".dpapi"])
+    subprocess.run(["wireguard", "/installtunnelservice", "C:\\Program Files\\WireGuard\\Data\\Configurations\\" + conf_name + ".dpapi"])
+    input()
+    print(["sc", "config", "WireguardTunnel$" + conf_name[:-5], "start=auto"])
+    subprocess.run(["sc", "config", "WireguardTunnel$" + conf_name[:-5], "start=auto"])
+    input()
+    print(["sc", "failure", "WireguardTunnel$" + conf_name[:-5], "reset=0", "actions=restart/0/restart/0/restart/0"])
+    subprocess.run(["sc", "failure", "WireguardTunnel$" + conf_name[:-5], "reset=0", "actions=restart/0/restart/0/restart/0"])
+    input()
 
 def write_conf(entry_server, exit_server, privkey, address):
     if not exit_server:
@@ -54,7 +59,7 @@ def write_conf(entry_server, exit_server, privkey, address):
         f.write(f"PrivateKey = {privkey}\n")
         f.write(f"Address = {address}\n")
         f.write(f"DNS = 10.64.0.1\n")
-        f.write(f"PostUp = {sys.executable} {os.path.dirname(os.path.abspath(__file__)) + os.sep + "starter.py"}\n")
+        f.write(f"PostUp = \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}starter.py\" %WIREGUARD_TUNNEL_NAME%\n")
         f.write(f"\n")
         f.write(f"[Peer]\n")
         f.write(f"PublicKey = {entry_server['pubkey']}\n")
