@@ -6,6 +6,10 @@ import requests
 import subprocess
 import platform
 import os.path
+import io
+import zipfile
+import glob
+import stat
 
 if platform.system() == "Windows":
     from win import *
@@ -144,6 +148,28 @@ def connect():
     conf_name = write_conf(entry_server, exit_server, privkey, address)
     reload_tunnel(conf_name)
 
+def check_mvup():
+    for file in glob.glob(os.path.dirname(os.path.abspath(__file__))):
+        if file.startswith("mullvad-upgrade-tunnel"):
+            return
+    api_response = requests.get("https://api.github.com/repos/mullvad/wgephemeralpeer/releases/latest")
+    if api_response.status_code // 100 != 2:
+        print("Error: Unable to connect to Github API.", file=sys.stderr)
+        sys.exit(1)
+    version = api_response.json()['tag_name']
+
+    zip_response = requests.get(f"https://github.com/mullvad/wgephemeralpeer/releases/download/{version}/mullvad-upgrade-tunnel_{version}_{platform.system().lower()}_amd64.zip")
+    if zip_response.status_code // 100 != 2:
+        print("Error: Unable to connect to Github API.", file=sys.stderr)
+        sys.exit(1)
+    zip_file = io.BytesIO(zip_response.content)
+    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+        zip_ref.extractall(os.path.dirname(os.path.abspath(__file__)))
+    if platform.system() == "Linux":
+        file_path = os.path.dirname(os.path.abspath(__file__)) + os.sep + "mullvad-upgrade-tunnel"
+        new_permissions = os.stat(file_path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        os.chmod(file_path, new_permissions)
+
 def main():
     detect_active_connection()
     if not is_admin():
@@ -152,6 +178,8 @@ def main():
         print("Bye !")
         sys.exit(0)
     while True:
+        print("Checking if mullvad-upgrade-tunnel executable is present.")
+        check_mvup()
         print("Which action would you like to perform :")
         print("[0] Connect to a new tunnel")
         print("[1] Disconnect the existing tunnel")
