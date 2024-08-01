@@ -8,9 +8,9 @@ import platform
 import os.path
 
 if platform.system() == "Windows":
-    from windows import *
+    from win import *
 elif platform.system() == "Linux":
-    from linux import *
+    from deb import *
 else:
     print("Error : You are not on a supported platform, exiting.")
     sys.exit(1)
