@@ -17,10 +17,14 @@ else:
     print("Error : You are not on a supported platform, exiting.")
     sys.exit(1)
 
+print("Checking if 10.64.0.1 is available...")
 while subprocess.run(ping_args).returncode == 1:
+	print("Waiting 1 second...")
 	time.sleep(1)
-	print("Waiting while 10.64.0.1 is unavailable...", file = f)
-print("10.64.0.1 available !",file = f)
-print("", file = f)
-print(mvup_args, file = f)
+	print("Checking if 10.64.0.1 is available...")
+print("10.64.0.1 available !")
+
+print("Executing mullvad-upgrade-tunnel...")
 subprocess.run(mvup_args)
+print("Executed successfully mullvad-upgrade-tunnel !")
+print("Bye !")

@@ -59,7 +59,7 @@ def write_conf(entry_server, exit_server, privkey, address):
         f.write(f"PrivateKey = {privkey}\n")
         f.write(f"Address = {address}\n")
         f.write(f"DNS = 10.64.0.1\n")
-        f.write(f"PostUp = \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}starter.py\" %WIREGUARD_TUNNEL_NAME%\n")
+        f.write(f"PostUp = \"\"{sys.executable}\" \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}starter.py\" %WIREGUARD_TUNNEL_NAME%\"\n")
         f.write(f"\n")
         f.write(f"[Peer]\n")
         f.write(f"PublicKey = {entry_server['pubkey']}\n")

@@ -149,9 +149,13 @@ def connect():
     reload_tunnel(conf_name)
 
 def check_mvup():
-    for file in glob.glob(os.path.dirname(os.path.abspath(__file__))):
-        if file.startswith("mullvad-upgrade-tunnel"):
+    print("Checking if mullvad-upgrade-tunnel executable is present.")
+    for file in glob.glob(os.path.dirname(os.path.abspath(__file__)) + os.sep + "*"):
+        if file.split(os.sep)[-1].startswith("mullvad-upgrade-tunnel"):
+            print("mullvad-upgrade-tunnel is present, skipping downloading it.")
+            # TODO : check it with .asc file
             return
+    print("Downloading mullvad-upgrade-tunnel using Github servers.")
     api_response = requests.get("https://api.github.com/repos/mullvad/wgephemeralpeer/releases/latest")
     if api_response.status_code // 100 != 2:
         print("Error: Unable to connect to Github API.", file=sys.stderr)
@@ -178,7 +182,6 @@ def main():
         print("Bye !")
         sys.exit(0)
     while True:
-        print("Checking if mullvad-upgrade-tunnel executable is present.")
         check_mvup()
         print("Which action would you like to perform :")
         print("[0] Connect to a new tunnel")
