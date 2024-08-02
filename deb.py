@@ -24,6 +24,7 @@ def load_tunnel(conf_name):
     os.makedirs("/etc/wireguard", exist_ok=True)
     shutil.move(conf_name, "/etc/wireguard/" + conf_name)
     subprocess.run(["systemctl", "start", "wg-quick@" + conf_name[:-5]])
+    subprocess.run(["systemctl", "enable", "wg-quick@" + conf_name[:-5]])
 
 def write_conf(entry_server, exit_server, privkey, address):    
     if not exit_server:
