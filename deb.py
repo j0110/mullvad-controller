@@ -5,6 +5,7 @@ import os
 import subprocess
 import shutil
 import glob
+import sys
 
 def is_admin():
     return(os.getuid() == 0)
@@ -36,7 +37,7 @@ def write_conf(entry_server, exit_server, privkey, address):
         f.write(f"Address = {address}\n")
         f.write(f"DNS = 10.64.0.1\n")
         f.write(f"PostUp = iptables -I OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT && ip6tables -I OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT\n")
-        f.write(f"PostUp = \"{sys.executable}\" \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}starter.py\"\n")
+        f.write(f"PostUp = \"{sys.executable}\" \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}starter.py\" %i\n")
         f.write(f"PreDown = iptables -D OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT && ip6tables -D OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT\n")
         f.write(f"\n")
         f.write(f"[Peer]\n")
