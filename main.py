@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import requests
 import subprocess
 import platform
 import os.path
@@ -18,6 +17,26 @@ elif platform.system() == "Linux":
 else:
     print("Error : You are not on a supported platform, exiting.")
     sys.exit(1)
+
+if not is_admin():
+    print("You are not running this script with admin/su rights.")
+    print("Please restart with admin/su rights.")
+    print("Bye !")
+    sys.exit(0)
+
+try:
+    import requests
+except ModuleNotFoundError:
+    print("Installing requests...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "requests"], check=True)
+    import requests
+
+try:
+    import git
+except ModuleNotFoundError:
+    print("Installing GitPython...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "GitPython"], check=True)
+    import git
 
 def get_servers():
     print("Contacting Mullvad API for server list.")
@@ -174,27 +193,29 @@ def check_mvup():
         new_permissions = os.stat(file_path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         os.chmod(file_path, new_permissions)
 
+def update():
+    g = git.cmd.Git(os.path.dirname(os.path.abspath(__file__)))
+    g.pull()
+
 def main():
     detect_active_connection()
-    if not is_admin():
-        print("You are not running this script with admin/su rights.")
-        print("Please restart with admin/su rights.")
-        print("Bye !")
-        sys.exit(0)
     while True:
         check_mvup()
         print("Which action would you like to perform :")
-        print("[0] Connect to a new tunnel")
-        print("[1] Disconnect the existing tunnel")
+        print("[0] Quit")
+        print("[1] Connect to a new tunnel")
+        print("[2] Disconnect the existing tunnel")
+        print("[3] Update this script (using GitHub servers)")
         answer = input("Which action would you like to perform > ").strip()
         if answer == "0":
-            connect()
-            input("Work done. Press ENTER to quit.")
+            print("Bye !")
             return()
         if answer == "1":
+            connect()
+        if answer == "2":
             disconnect()
-            input("Work done. Press ENTER to quit.")
-            return()
+        if answer == "3":
+            update()
 
 if __name__ == '__main__':
     main()
