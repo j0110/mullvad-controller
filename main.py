@@ -194,8 +194,7 @@ def check_mvup():
         os.chmod(file_path, new_permissions)
 
 def update():
-    g = git.cmd.Git(os.path.dirname(os.path.abspath(__file__)))
-    g.pull()
+    git.cmd.Git(os.path.dirname(os.path.abspath(__file__))).pull()
 
 def main():
     detect_active_connection()
