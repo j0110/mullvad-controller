@@ -6,9 +6,17 @@ import subprocess
 import shutil
 import glob
 import sys
+import apt
 
 def is_admin():
     return(os.getuid() == 0)
+
+def install_module(module, deb):
+    cache = apt.Cache()
+    cache.open()
+    package = cache["python3-" + deb]
+    package.mark_install()
+    cache.commit()
 
 def unload_tunnel(tunnel):
     subprocess.run(["systemctl", "stop", "wg-quick@" + tunnel])

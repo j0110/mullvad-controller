@@ -12,6 +12,9 @@ import winreg
 def is_admin():
     return(ctypes.windll.shell32.IsUserAnAdmin() == 1)
 
+def install_module(module, deb=None):
+    subprocess.run([sys.executable, "-m", "pip", "install", module], check=True)
+
 def write_registry_key():
     print("Writing key in the registry.")
     try:
