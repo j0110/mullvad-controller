@@ -38,15 +38,9 @@ def load_tunnel(conf_name):
     write_registry_key()
     print("Loading the new tunnel.")
     shutil.move(conf_name, "C:\\Program Files\\WireGuard\\Data\\Configurations\\" + conf_name)
-    print(["wireguard", "/installtunnelservice", "C:\\Program Files\\WireGuard\\Data\\Configurations\\" + conf_name + ".dpapi"])
     subprocess.run(["wireguard", "/installtunnelservice", "C:\\Program Files\\WireGuard\\Data\\Configurations\\" + conf_name + ".dpapi"])
-    input()
-    print(["sc", "config", "WireguardTunnel$" + conf_name[:-5], "start=auto"])
     subprocess.run(["sc", "config", "WireguardTunnel$" + conf_name[:-5], "start=auto"])
-    input()
-    print(["sc", "failure", "WireguardTunnel$" + conf_name[:-5], "reset=0", "actions=restart/0/restart/0/restart/0"])
     subprocess.run(["sc", "failure", "WireguardTunnel$" + conf_name[:-5], "reset=0", "actions=restart/0/restart/0/restart/0"])
-    input()
 
 def write_conf(entry_server, exit_server, privkey, address):
     if not exit_server:

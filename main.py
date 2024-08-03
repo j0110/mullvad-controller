@@ -91,14 +91,14 @@ def ask_multihop():
             return(False)
 
 def exists_key():
-    return(os.path.isfile("key"))
+    return(os.path.isfile(os.path.dirname(os.path.abspath(__file__)) + os.sep + "key"))
 
 def write_key(account, privkey):
-    with open("key", "w") as key_file:
+    with open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "key", "w") as key_file:
         key_file.write("\n".join([account, privkey]))
 
 def load_key():
-    with open("key", "r") as key_file:
+    with open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "key", "r") as key_file:
         return(key_file.read().split("\n"))
 
 def reload_tunnel(conf_name):
@@ -189,9 +189,11 @@ def main():
         answer = input("Which action would you like to perform > ").strip()
         if answer == "0":
             connect()
+            input("Work done. Press ENTER to quit.")
             return()
         if answer == "1":
             disconnect()
+            input("Work done. Press ENTER to quit.")
             return()
 
 if __name__ == '__main__':
