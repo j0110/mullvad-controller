@@ -44,7 +44,7 @@ def load_tunnel(conf_name):
 
 def write_conf(entry_server, exit_server, privkey, address):
     if not exit_server:
-        exit_server = {"port" : "51820"}
+        exit_server = {"port" : "51820", "pubkey" : entry_server["pubkey"]}
         config_file = f"m_{entry_server['country.code'].upper()}.{entry_server['city.code']}.conf"
     else:
         config_file = f"m_{entry_server['country.code'].upper()}.{entry_server['city.code']}-{exit_server['country.code'].upper()}.{exit_server['city.code']}.conf"
@@ -56,7 +56,7 @@ def write_conf(entry_server, exit_server, privkey, address):
         f.write(f"PostUp = \"\"{sys.executable}\" \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}starter.py\" %WIREGUARD_TUNNEL_NAME%\"\n")
         f.write(f"\n")
         f.write(f"[Peer]\n")
-        f.write(f"PublicKey = {entry_server['pubkey']}\n")
+        f.write(f"PublicKey = {exit_server['pubkey']}\n")
         f.write(f"Endpoint = {entry_server['ip4']}:{exit_server['port']}\n")
         f.write(f"AllowedIPs = 0.0.0.0/0, ::/0\n")
         f.write(f"PersistentKeepalive = 25")
