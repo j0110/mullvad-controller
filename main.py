@@ -28,14 +28,14 @@ try:
     import requests
 except ModuleNotFoundError:
     print("Installing requests...")
-    subprocess.run([sys.executable, "-m", "pip", "install", "requests"], check=True)
+    install_module("requests")
     import requests
 
 try:
     import git
 except ModuleNotFoundError:
     print("Installing GitPython...")
-    subprocess.run([sys.executable, "-m", "pip", "install", "GitPython"], check=True)
+    install_module("GitPython", "git")
     import git
 
 def get_servers():
@@ -194,11 +194,12 @@ def check_mvup():
         os.chmod(file_path, new_permissions)
 
 def update():
-    git.cmd.Git(os.path.dirname(os.path.abspath(__file__))).pull()
+    print(git.cmd.Git(os.path.dirname(os.path.abspath(__file__))).pull())
+    print("\n")
 
 def main():
-    detect_active_connection()
     while True:
+        detect_active_connection()
         check_mvup()
         print("Which action would you like to perform :")
         print("[0] Quit")
