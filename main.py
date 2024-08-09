@@ -206,6 +206,7 @@ def main():
         print("[1] Connect to a new tunnel")
         print("[2] Disconnect the existing tunnel")
         print("[3] Update this script (using GitHub servers)")
+        print("[4] Install a beautiful shortcut")
         answer = input("Which action would you like to perform > ").strip()
         if answer == "0":
             print("Bye !")
@@ -216,6 +217,8 @@ def main():
             disconnect()
         if answer == "3":
             update()
+        if answer == "4":
+            intall_shortcut()
 
 if __name__ == '__main__':
     main()

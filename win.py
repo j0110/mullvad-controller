@@ -64,3 +64,6 @@ def write_conf(entry_server, exit_server, privkey, address):
         f.write(f"AllowedIPs = 0.0.0.0/0, ::/0\n")
         f.write(f"PersistentKeepalive = 25")
     return(config_file)
+
+def install_shortcut():
+    pass

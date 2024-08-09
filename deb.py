@@ -55,3 +55,12 @@ def write_conf(entry_server, exit_server, privkey, address):
         f.write(f"AllowedIPs = 0.0.0.0/0, ::/0\n")
         f.write(f"PersistentKeepalive = 25")
     return(config_file)
+
+def install_shortcut():
+    with open("/usr/share/applications/mullvad-controller.desktop", "w") as f:
+        f.write(f"[Desktop Entry]\n")
+        f.write(f"Type=Application\n")
+        f.write(f"Name=Mullvad Controller\n")
+        f.write(f"Comment=Mullvad Controller\n")
+        f.write(f"Exec=gnome-terminal -e \"sudo \"{sys.executable}\" \"{os.path.abspath(__file__)}\"\"\n")
+        f.write(f"Terminal=true\n")
