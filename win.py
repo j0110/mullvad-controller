@@ -8,6 +8,8 @@ import shutil
 import glob
 import sys
 import winreg
+import pythoncom
+from win32com.shell import shell
 
 def is_admin():
     return(ctypes.windll.shell32.IsUserAnAdmin() == 1)
@@ -66,4 +68,8 @@ def write_conf(entry_server, exit_server, privkey, address):
     return(config_file)
 
 def install_shortcut():
-    pass
+    shortcut = pythoncom.CoCreateInstance(shell.CLSID_ShellLink, None, pythoncom.CLSCTX_INPROC_SERVER, shell.IID_IShellLink)
+    shortcut.SetPath(os.environ["COMSPEC"])
+    shortcut.SetArguments(f"/c \"\"{sys.executable}\" \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}main.py\"\"")
+    shortcut.SetWorkingDirectory(os.path.dirname(os.path.abspath(__file__)))
+    shortcut.QueryInterface(pythoncom.IID_IPersistFile).Save(os.environ["USERPROFILE"] + os.sep + "Desktop" + os.sep + "Mullvad Controller.lnk", 0)
