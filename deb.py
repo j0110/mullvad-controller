@@ -62,5 +62,5 @@ def install_shortcut():
         f.write(f"Type=Application\n")
         f.write(f"Name=Mullvad Controller\n")
         f.write(f"Comment=Mullvad Controller\n")
-        f.write(f"Exec=gnome-terminal -e \"sudo \"{sys.executable}\" \"{os.path.abspath(__file__)}\"\"\n")
+        f.write(f"Exec=gnome-terminal -e \"sudo \"{sys.executable}\" \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}starter.py\"\"\n")
         f.write(f"Terminal=true\n")

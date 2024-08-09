@@ -217,6 +217,9 @@ def main():
             disconnect()
         if answer == "3":
             update()
+            print("Please restart the script to apply update.")
+            input("Press ENTER to exit.")
+            return()
         if answer == "4":
             install_shortcut()
 
