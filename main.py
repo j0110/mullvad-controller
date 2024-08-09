@@ -218,7 +218,7 @@ def main():
         if answer == "3":
             update()
         if answer == "4":
-            intall_shortcut()
+            install_shortcut()
 
 if __name__ == '__main__':
     main()
