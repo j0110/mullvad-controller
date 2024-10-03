@@ -166,3 +166,6 @@ key
 
 # mullvad-upgrade-tunnel executable
 mullvad-upgrade-tunnel*
+
+# Servers list
+servers.json

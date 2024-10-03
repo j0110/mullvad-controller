@@ -9,6 +9,7 @@ import io
 import zipfile
 import glob
 import stat
+import json
 
 if platform.system() == "Windows":
     from win import *
@@ -44,7 +45,14 @@ def get_servers():
     if response.status_code // 100 != 2:
         print("Error: Unable to connect to Mullvad API.", file=sys.stderr)
         sys.exit(1)
-    return(response.json())
+    with open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "servers.json", "w") as servers_file:
+        servers_file.write(response.text)
+
+def load_servers():
+    if not exists_servers():
+        get_servers()
+    with open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "servers.json", "r") as servers_file:
+        return(json.loads(servers_file.read()))
 
 def select_server(servers):
     server = {}
@@ -112,11 +120,20 @@ def ask_multihop():
 def exists_key():
     return(os.path.isfile(os.path.dirname(os.path.abspath(__file__)) + os.sep + "key"))
 
-def write_key(account, privkey):
+def exists_servers():
+    return(os.path.isfile(os.path.dirname(os.path.abspath(__file__)) + os.sep + "servers.json"))
+
+def write_key(account, privkey, address):
     with open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "key", "w") as key_file:
-        key_file.write("\n".join([account, privkey]))
+        key_file.write("\n".join([account, privkey, address]))
 
 def load_key():
+    if not exists_key():
+        account = get_account()
+        privkey = get_privkey()
+        pubkey = get_pubkey(privkey)
+        address = get_address(account, pubkey)
+        write_key(account, privkey, address)
     with open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "key", "r") as key_file:
         return(key_file.read().split("\n"))
 
@@ -142,15 +159,8 @@ def disconnect():
     delete_extra_tunnels()
 
 def connect():
-    if not exists_key():
-        account = get_account()
-        privkey = get_privkey()
-        write_key(account, privkey)
-    else:
-        account, privkey = load_key()
-    pubkey = get_pubkey(privkey)
-    servers = get_servers()
-    address = get_address(account, pubkey)
+    account, privkey, address = load_key()
+    servers = load_servers()
     print()
     if ask_multihop():
         print("Please select an entry server :")
@@ -205,8 +215,9 @@ def main():
         print("[0] Quit")
         print("[1] Connect to a new tunnel")
         print("[2] Disconnect the existing tunnel")
-        print("[3] Update this script (using GitHub servers)")
-        print("[4] Install a beautiful shortcut")
+        print("[3] Update the relays list (using Mullvad servers)")
+        print("[4] Update this script (using GitHub servers)")
+        print("[5] Install a beautiful shortcut")
         answer = input("Which action would you like to perform > ").strip()
         if answer == "0":
             print("Bye !")
@@ -216,11 +227,13 @@ def main():
         if answer == "2":
             disconnect()
         if answer == "3":
+            get_servers()
+        if answer == "4":
             update()
             print("Please restart the script to apply update.")
             input("Press ENTER to exit.")
             return()
-        if answer == "4":
+        if answer == "5":
             install_shortcut()
 
 if __name__ == '__main__':
