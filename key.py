@@ -34,12 +34,12 @@ def read_and_decrypt(password):
 		content = key_file.read()
 		salt = content[0:16]
 		crypted_bytes = content[16:80]
-		key = hashlib.pbkdf2_hmac("sha512", password.encode("utf-8"), os.urandom(32), 10**6)
+		key = hashlib.pbkdf2_hmac("sha512", password.encode("utf-8"), salt, 10**6)
 		return(xor_bytes(key, crypted_bytes))
 
 def crypt_and_write(password, key_bytes):
 	salt = os.urandom(16)
-	key = hashlib.pbkdf2_hmac("sha512", password.encode("utf-8"), os.urandom(32), 10**6)
+	key = hashlib.pbkdf2_hmac("sha512", password.encode("utf-8"), salt, 10**6)
 	crypted_bytes = xor_bytes(key, key_bytes)
 	with open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "key", "wb") as key_file:
 		key_file.write(salt + crypted_bytes)

@@ -10,6 +10,7 @@ import zipfile
 import glob
 import stat
 import json
+import key
 
 if platform.system() == "Windows":
     from win import *
@@ -133,9 +134,10 @@ def load_key():
         privkey = get_privkey()
         pubkey = get_pubkey(privkey)
         address = get_address(account, pubkey)
-        write_key(account, privkey, address)
-    with open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "key", "r") as key_file:
-        return(key_file.read().split("\n"))
+        key.write_key(account, privkey, address)
+        return(account, privkey, address)
+    else:
+        return(key.load_key())
 
 def reload_tunnel(conf_name):
     print("Preparing to load the newly created tunnel.")
