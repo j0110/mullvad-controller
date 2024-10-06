@@ -14,7 +14,7 @@ def key_to_bytes(account, privkey, address, control):
 	address = [a.split("/")[0] for a in address.split(",")]
 	key_bytes += socket.inet_pton(socket.AF_INET, address[0])
 	key_bytes += socket.inet_pton(socket.AF_INET6, address[1])
-	key_bytes += control.encode("ascii")
+	key_bytes += control.encode("cp1252")
 	return(key_bytes)
 
 def bytes_to_key(key_bytes):
@@ -23,7 +23,7 @@ def bytes_to_key(key_bytes):
 	ip4 = socket.inet_ntop(socket.AF_INET, key_bytes[40:44])
 	ip6 = socket.inet_ntop(socket.AF_INET6, key_bytes[44:60])
 	address = ip4 + "/32," + ip6 + "/128"
-	control = key_bytes[60:64].decode("ascii")
+	control = key_bytes[60:64].decode("cp1252")
 	print("The control code is : " + control + "\nif it doesn't match what you expected, please stop this program with CTRL+C (or ^C),\nand restart again with the right password.")
 	return(account, privkey, address)
 
