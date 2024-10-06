@@ -23,7 +23,10 @@ def bytes_to_key(key_bytes):
 	ip4 = socket.inet_ntop(socket.AF_INET, key_bytes[40:44])
 	ip6 = socket.inet_ntop(socket.AF_INET6, key_bytes[44:60])
 	address = ip4 + "/32," + ip6 + "/128"
-	control = key_bytes[60:64].decode("cp1252")
+	try:
+		control = key_bytes[60:64].decode("cp1252")
+	except UnicodeDecodeError:
+		control = "@#&!"
 	print("The control code is : " + control + "\nif it doesn't match what you expected, please stop this program with CTRL+C (or ^C),\nand restart again with the right password.")
 	return(account, privkey, address)
 
