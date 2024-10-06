@@ -7,14 +7,15 @@ import base64
 import socket
 import getpass
 
-def key_to_bytes(account, privkey, address):
+def key_to_bytes(account, privkey, address, control):
 	key_bytes = b""
 	key_bytes += int(account).to_bytes(8, byteorder="big")
 	key_bytes += base64.b64decode(privkey)
 	address = [a.split("/")[0] for a in address.split(",")]
 	key_bytes += socket.inet_pton(socket.AF_INET, address[0])
 	key_bytes += socket.inet_pton(socket.AF_INET6, address[1])
-	return(key_bytes + 4*b'\x00')
+	key_bytes += control.encode("ascii")
+	return(key_bytes)
 
 def bytes_to_key(key_bytes):
 	account = str(int.from_bytes(key_bytes[0:8], byteorder="big"))
@@ -22,6 +23,8 @@ def bytes_to_key(key_bytes):
 	ip4 = socket.inet_ntop(socket.AF_INET, key_bytes[40:44])
 	ip6 = socket.inet_ntop(socket.AF_INET6, key_bytes[44:60])
 	address = ip4 + "/32," + ip6 + "/128"
+	control = key_bytes[60:64].decode("ascii")
+	print("The control code is : " + control + "\nif it doesn't match what you expected, please stop this program with CTRL+C (or ^C),\nand restart again with the right password.")
 	return(account, privkey, address)
 
 def xor_bytes(bytes_1, bytes_2):
@@ -51,5 +54,8 @@ def load_key():
 
 def write_key(account, privkey, address):
 	password = getpass.getpass("Please provide a new password for securing your private key :\n> ")
-	key_bytes = key_to_bytes(account, privkey, address)
+	control = ""
+	while len(control)!=4 or not control.isalnum():
+		control = input("Please input a 4 characters alphanumeric control code,\nit will be printed when decrypting the key, and must match with what you will enter now\nThe control string must match 4*[A-Z,a-z,0-9]\n>")
+	key_bytes = key_to_bytes(account, privkey, address, control)
 	crypt_and_write(password, key_bytes)
