@@ -7,9 +7,9 @@ import subprocess
 import shutil
 import glob
 import sys
-import winreg
-import pythoncom
-from win32com.shell import shell
+import requests
+import zipfile
+import io
 
 def is_admin():
     return(ctypes.windll.shell32.IsUserAnAdmin() == 1)
@@ -17,7 +17,22 @@ def is_admin():
 def install_module(module, deb=None):
     subprocess.run([sys.executable, "-m", "pip", "install", module], check=True)
 
+def extra_pip():
+    try:
+        import winreg
+    except ModuleNotFoundError:
+        print("Installing winreg...")
+        install_module("winreg") 
+
+    try:
+        from win32com.shell import shell
+        import pythoncom
+    except ModuleNotFoundError:
+        print("Installing pywin32...")
+        install_module("pywin32") 
+
 def write_registry_key():
+    import winreg
     print("Writing key in the registry.")
     try:
         registry_path = r"Software\WireGuard"
@@ -68,8 +83,27 @@ def write_conf(entry_server, exit_server, privkey, address):
     return(config_file)
 
 def install_shortcut():
+    from win32com.shell import shell
+    import pythoncom
     shortcut = pythoncom.CoCreateInstance(shell.CLSID_ShellLink, None, pythoncom.CLSCTX_INPROC_SERVER, shell.IID_IShellLink)
     shortcut.SetPath(os.environ["COMSPEC"])
     shortcut.SetArguments(f"/c \"\"{sys.executable}\" \"{os.path.dirname(os.path.abspath(__file__)) + os.sep}main.py\"\"")
     shortcut.SetWorkingDirectory(os.path.dirname(os.path.abspath(__file__)))
     shortcut.QueryInterface(pythoncom.IID_IPersistFile).Save(os.environ["USERPROFILE"] + os.sep + "Desktop" + os.sep + "Mullvad Controller.lnk", 0)
+
+def check_psexec():
+    print("Checking if PsExec64 executable is present.")
+    for file in glob.glob(os.path.dirname(os.path.abspath(__file__)) + os.sep + "*"):
+        if file.split(os.sep)[-1] == "PsExec64.exe":
+            print("PsExec64 is present, skipping downloading it.")
+            # TODO : check it with .asc file
+            return
+    print("Downloading PsExec64 using SysInternals servers.")
+
+    response = requests.get("https://download.sysinternals.com/files/PSTools.zip")
+    if response.status_code // 100 != 2:
+        print("Error: Unable to connect to SysInternals servers.", file=sys.stderr)
+        sys.exit(1)
+    with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+        with z.open("PsExec64.exe") as f_src, open(os.path.dirname(os.path.abspath(__file__)) + os.sep + "PsExec64.exe", "wb") as f_dest:
+            f_dest.write(f_src.read())

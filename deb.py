@@ -18,6 +18,12 @@ def install_module(module, deb):
     package.mark_install()
     cache.commit()
 
+def extra_pip():
+    return
+
+def check_psexec():
+    return
+
 def unload_tunnel(tunnel):
     subprocess.run(["systemctl", "stop", "wg-quick@" + tunnel])
 

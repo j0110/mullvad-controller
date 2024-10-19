@@ -9,7 +9,7 @@ import os.path
 
 if platform.system()=="Windows":
 	ping_args = [os.environ["SYSTEMROOT"] + os.sep + "System32" + os.sep + "ping.exe", "-n", "1", "10.64.0.1"]
-	mvup_args = [os.path.dirname(os.path.abspath(__file__)) + os.sep + "mullvad-upgrade-tunnel.exe", "-wg-interface", sys.argv[1]]
+	mvup_args = [os.path.dirname(os.path.abspath(__file__)) + os.sep + "PsExec64.exe", "-i", "-s", "-accepteula", "-nobanner", os.path.dirname(os.path.abspath(__file__)) + os.sep + "mullvad-upgrade-tunnel.exe", "-wg-interface", sys.argv[1]]
 elif platform.system()=="Linux":
 	ping_args = ["/usr/bin/ping", "-c", "1", "10.64.0.1"]
 	mvup_args = [os.path.dirname(os.path.abspath(__file__)) + os.sep + "mullvad-upgrade-tunnel", "-wg-interface", sys.argv[1]]

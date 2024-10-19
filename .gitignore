@@ -167,5 +167,8 @@ key
 # mullvad-upgrade-tunnel executable
 mullvad-upgrade-tunnel*
 
+# PsExec64.exe
+PsExec*
+
 # Servers list
 servers.json

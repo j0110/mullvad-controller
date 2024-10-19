@@ -40,6 +40,8 @@ except ModuleNotFoundError:
     install_module("GitPython", "git")
     import git
 
+extra_pip()
+
 def get_servers():
     print("Contacting Mullvad API for server list.")
     response = requests.get("https://api.mullvad.net/public/relays/wireguard/v1/")
@@ -213,6 +215,7 @@ def main():
     while True:
         detect_active_connection()
         check_mvup()
+        check_psexec()
         print("Which action would you like to perform :")
         print("[0] Quit")
         print("[1] Connect to a new tunnel")
