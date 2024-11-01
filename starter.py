@@ -18,12 +18,15 @@ else:
     sys.exit(1)
 
 print("Checking if 10.64.0.1 is available...")
-while subprocess.run(ping_args).returncode == 1:
-	print("Waiting 1 second...")
+while subprocess.run(ping_args).returncode != 0:
+	print("It failed, waiting 1 second...")
 	time.sleep(1)
-	print("Checking if 10.64.0.1 is available...")
+	print("Checking again if 10.64.0.1 is available...")
 print("10.64.0.1 available !")
 
 print("Executing mullvad-upgrade-tunnel...")
-subprocess.run(mvup_args)
+while subprocess.run(mvup_args).returncode != 0:
+	print("It failed, waiting 1 second...")
+	time.sleep(1)
+	print("Executing again mullvad-upgrade-tunnel...")
 print("Executed successfully mullvad-upgrade-tunnel !")
