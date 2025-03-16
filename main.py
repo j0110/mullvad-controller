@@ -11,6 +11,7 @@ import glob
 import stat
 import key
 from servers import Servers
+from tunnel import Tunnel
 
 if platform.system() == "Windows":
     from win import *
@@ -104,7 +105,8 @@ def reload_tunnel(conf_name):
     load_tunnel(conf_name)
 
 def disconnect():
-    active_tunnel = servers.get_active_tunnel()
+    active_tunnel.refresh()
+    active_tunnel = active_tunnel.name
     if active_tunnel:
         unload_tunnel(active_tunnel)
     delete_extra_tunnels()
@@ -161,10 +163,12 @@ if __name__ == '__main__':
     check_mvup()
     check_psexec()
     servers = Servers()
+    active_tunnel = Tunnel()
 
     while True:
         print()
-        servers.detect_active_connection()
+        active_tunnel.refresh()
+        print(active_tunnel.recognition)
         print()
         print("[0] Quit")
         print("[1] Connect to a new tunnel")
@@ -185,6 +189,7 @@ if __name__ == '__main__':
             show_key()
         if answer == "4":
             servers.update_servers()
+            active_tunnel.servers.load_servers()
         if answer == "5":
             update()
             print("Please restart the script to apply update.")

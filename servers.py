@@ -6,7 +6,6 @@ import sys
 import json
 import requests
 import random
-import subprocess
 
 class Servers():
     def __init__(self):
@@ -219,37 +218,3 @@ class Servers():
         confirmation = input("Is this server acceptable? (Y to accept, any other key to pick another) > ").strip().lower()
         if confirmation == "y":
             return server
-        
-    def get_active_tunnel_name(self):
-        return(subprocess.run(['wg', 'show', 'all', 'dump'], capture_output=True, text=True).stdout.split("\t")[0].strip())
-    
-    def get_active_tunnel_pubkey(self):
-        return(subprocess.run(['wg', 'show', 'all', 'dump'], capture_output=True, text=True).stdout.split("\t")[5].strip())
-
-    def recognize_tunnel(self, pubkey):
-        for relay in self.servers["wireguard"]["relays"]:
-            if relay["public_key"] == pubkey:
-                loc_info = self.servers["locations"].get(relay["location"], {})
-                server = {
-                    "hostname": relay["hostname"],
-                    "ipv4": relay["ipv4_addr_in"],
-                    "ipv6": relay["ipv6_addr_in"],
-                    "pubkey": relay["public_key"],
-                    "owned": relay["owned"],
-                    "country": loc_info.get("country", ""),
-                    "city": loc_info.get("city", ""),
-                    "latitude": loc_info.get("latitude", None),
-                    "longitude": loc_info.get("longitude", None)
-                }
-                return server
-
-    def detect_active_connection(self):
-        active_tunnel = self.get_active_tunnel_name()
-        if active_tunnel:
-            tunnel = self.recognize_tunnel(self.get_active_tunnel_pubkey())
-            if tunnel:
-                print(f"You are actually connected to {tunnel['hostname']} in {tunnel['city']}, {tunnel['country']} (Mullvad tunnel).")
-            else:
-                print(f"You are actually connected to {active_tunnel} (not a Mullvad tunnel).")
-        else:
-            print("You are not actually connected to a Wireguard server.")
