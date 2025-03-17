@@ -6,6 +6,7 @@ import sys
 import json
 import requests
 import random
+from server import Server
 
 class Servers():
     def __init__(self):

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import subprocess
-from servers import Servers
 from server import Server
 
 class Tunnel():
