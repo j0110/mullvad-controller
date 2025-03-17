@@ -6,7 +6,7 @@ import sys
 import json
 import requests
 import random
-from server import Server
+from server import Server, VoidServer
 
 class Servers():
     def __init__(self):
@@ -127,14 +127,7 @@ class Servers():
                     try:
                         relay_choice = int(relay_input)
                         if 0 <= relay_choice < len(available_relays):
-                            selected_relay = available_relays[relay_choice]
-                            server["hostname"] = selected_relay["hostname"]
-                            server["ipv4"] = selected_relay["ipv4_addr_in"]
-                            server["ipv6"] = selected_relay["ipv6_addr_in"]
-                            server["pubkey"] = selected_relay["public_key"]
-                            server["owned"] = selected_relay["owned"]
-                            owned_text = "Owned" if selected_relay["owned"] else "Not owned"
-                            print(selected_relay["hostname"] + " selected. (" + owned_text + ")")
+                            server = Server(self.servers, available_relays[relay_choice]["hostname"])
                             if self.ask_server_ok(server):
                                 return server
                         else:
@@ -197,25 +190,19 @@ class Servers():
         # Random selection loop: pick a random server and ask for confirmation.
         while True:
             selected_relay = random.choice(relays)
-            loc_info = self.servers["locations"].get(selected_relay["location"], {})
-            server = {
-                "hostname": selected_relay["hostname"],
-                "ipv4": selected_relay["ipv4_addr_in"],
-                "ipv6": selected_relay["ipv6_addr_in"],
-                "pubkey": selected_relay["public_key"],
-                "owned": selected_relay["owned"],
-                "country": loc_info.get("country", ""),
-                "city": loc_info.get("city", ""),
-                "latitude": loc_info.get("latitude", None),
-                "longitude": loc_info.get("longitude", None)
-            }
+            server = Server(self.servers, selected_relay["hostname"])
             if self.ask_server_ok(server):
                 return server
 
+    def return_void(self, entry_server):
+        return VoidServer(entry_server)
+
     def ask_server_ok(self, server):
-        print("Server selected:")
-        for k in ["hostname", "country", "city", "owned"]:
-            print(f"\t{k.capitalize()} : {server[k]}")
+        print(f"Server selected:")
+        print(f"\tHostname : {server.name}")
+        print(f"\tCountry : {server.country}")
+        print(f"\tCity : {server.city}")
+        print(f"\tOwned : {server.owned}")
         confirmation = input("Is this server acceptable? (Y to accept, any other key to pick another) > ").strip().lower()
         if confirmation == "y":
             return server

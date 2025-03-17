@@ -19,7 +19,7 @@ class Tunnel():
         return(subprocess.run(['wg', 'show', 'all', 'dump'], capture_output=True, text=True).stdout.split("\t"))
 
     def recognize_tunnel(self, servers):
-        return Server(servers, self.pubkey)
+        return Server(servers.servers, self.pubkey)
 
     def detect_active_connection(self):
         if self.name:

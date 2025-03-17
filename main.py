@@ -99,17 +99,15 @@ def show_key():
         print(f"\tPrivate key : {privkey}")
         print(f"\tAddress : {address}")
 
-def reload_tunnel(conf_name):
+def reload_tunnel():
     print("Preparing to load the newly created tunnel.")
     disconnect()
-    load_tunnel(conf_name)
+    load_tunnel()
 
 def disconnect():
     active_tunnel.refresh(servers)
-    active_tunnel = active_tunnel.name
-    if active_tunnel:
-        unload_tunnel(active_tunnel)
-    delete_extra_tunnels()
+    if active_tunnel.name:
+        unload_tunnel(active_tunnel.name)
 
 def connect():
     print()
@@ -122,11 +120,11 @@ def connect():
     else:
         print("Please select a server :")
         entry_server = servers.select_server()
-        exit_server = None
+        exit_server = servers.return_void(entry_server)
     print()
     print("Writing configuration file.")
-    conf_name = write_conf(entry_server, exit_server, *load_key()[1:])
-    reload_tunnel(conf_name)
+    write_conf(entry_server, exit_server, *load_key()[1:])
+    reload_tunnel()
 
 def check_mvup():
     print("Checking if mullvad-upgrade-tunnel executable is present.")
