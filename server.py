@@ -4,7 +4,7 @@
 class Server():
     def __init__(self, servers, id):
         self.mullvad = False
-        if id.endswith("="):
+        if len(id) == 44:
             key = "public_key"
         else:
             key = "hostname"
