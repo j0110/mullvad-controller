@@ -105,7 +105,7 @@ def reload_tunnel(conf_name):
     load_tunnel(conf_name)
 
 def disconnect():
-    active_tunnel.refresh()
+    active_tunnel.refresh(servers)
     active_tunnel = active_tunnel.name
     if active_tunnel:
         unload_tunnel(active_tunnel)
@@ -163,11 +163,11 @@ if __name__ == '__main__':
     check_mvup()
     check_psexec()
     servers = Servers()
-    active_tunnel = Tunnel()
+    active_tunnel = Tunnel(servers)
 
     while True:
         print()
-        active_tunnel.refresh()
+        active_tunnel.refresh(servers)
         print(active_tunnel.recognition)
         print()
         print("[0] Quit")
@@ -189,7 +189,6 @@ if __name__ == '__main__':
             show_key()
         if answer == "4":
             servers.update_servers()
-            active_tunnel.servers.load_servers()
         if answer == "5":
             update()
             print("Please restart the script to apply update.")
